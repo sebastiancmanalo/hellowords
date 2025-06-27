@@ -196,23 +196,20 @@ export default function Component() {
 
   // Auto-grow textarea on content change
   useEffect(() => {
-    requestAnimationFrame(() => {
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-        textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+      
+      // Only scroll to bottom if user is already near the bottom
+      const isNearBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 100;
+      if (isNearBottom) {
+        // Scroll to show one line below the current position
+        const lineHeight = 24; // Approximate line height in pixels
+        const targetScrollTop = document.body.scrollHeight - window.innerHeight + lineHeight;
+        window.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
       }
-    });
+    }
   }, [content])
-
-  // Also auto-grow when opening a new entry (selectedEntry changes)
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-        textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
-      }
-    });
-  }, [selectedEntry])
 
   const loadEntries = async (encryptionKey: string) => {
     if (!user || !encryptionKey) return
@@ -949,7 +946,7 @@ export default function Component() {
       >
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-4">
-            {currentView === "entries" && entries.length > 0 && (
+            {entries.length > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -1020,18 +1017,18 @@ export default function Component() {
       </div>
 
       {/* Main Content Area */}
-      <div className="pt-20 px-6">
+      <div className="pt-20 px-6 pb-8">
         <div className="max-w-4xl mx-auto">
           <textarea
             ref={textareaRef}
             value={content}
             onChange={handleContentChange}
             placeholder=""
-            className={`w-full resize-none border-none outline-none font-mono text-lg leading-relaxed bg-transparent p-0 m-0 transition-colors ${
+            className={`w-full resize-none border-none outline-none font-mono text-lg leading-relaxed bg-transparent p-0 pb-8 m-0 transition-colors ${
               isDarkMode ? "text-gray-100" : "text-gray-800"
             }`}
             rows={1}
-            style={{ overflow: 'hidden', minHeight: '120px' }}
+            style={{ overflow: 'hidden' }}
           />
         </div>
       </div>
