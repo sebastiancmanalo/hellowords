@@ -49,6 +49,7 @@ export default function Component() {
     }
     return false
   })
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
   // Initialize auth and load data
   useEffect(() => {
@@ -196,6 +197,26 @@ export default function Component() {
     }
   }, [])
 
+  // Auto-grow textarea on content change
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+      }
+    });
+  }, [content])
+
+  // Also auto-grow when opening a new entry (selectedEntry changes)
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+      }
+    });
+  }, [selectedEntry])
+
   const loadEntries = async (encryptionKey: string) => {
     if (!user || !encryptionKey) return
 
@@ -294,6 +315,10 @@ export default function Component() {
 
   const saveEntry = async () => {
     if (!content.trim()) return
+    if (selectedEntry && content.trim() === selectedEntry.content.trim()) {
+      setCurrentView('entries');
+      return;
+    }
 
     if (!user) {
       pendingEntryRef.current = content
@@ -335,21 +360,8 @@ export default function Component() {
         embedding: embedding.length > 0 ? embedding : null,
       }
 
-      let result
-      if (selectedEntry) {
-        // Update existing entry
-        result = await supabase
-          .from("entries")
-          .update({
-            ...entryData,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", selectedEntry.id)
-          .select()
-      } else {
-        // Create new entry
-        result = await supabase.from("entries").insert(entryData).select()
-      }
+      // Always create a new entry (immutable)
+      const result = await supabase.from("entries").insert(entryData).select()
 
       if (result.error) {
         console.error("Error saving entry:", result.error)
@@ -462,6 +474,7 @@ export default function Component() {
     const newContent = e.target.value
     setContent(newContent)
     setIsTyping(true)
+    setShowTopBar(false)
 
     // Save draft to localStorage (debounced)
     if (typeof window !== 'undefined' && !selectedEntry) {
@@ -478,6 +491,7 @@ export default function Component() {
 
     const newTimeout = setTimeout(() => {
       setIsTyping(false)
+      setShowTopBar(true)
     }, 2000)
 
     setTypingTimeout(newTimeout)
@@ -769,13 +783,12 @@ export default function Component() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setCurrentView("editor")}
+                onClick={createNewEntry}
                 className={`transition-colors ${
                   isDarkMode
                     ? "text-gray-400 hover:text-gray-100 hover:bg-gray-800"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 }`}
-                aria-label="New entry"
               >
                 <Edit className="w-4 h-4" />
               </Button>
@@ -923,7 +936,7 @@ export default function Component() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 ${
+      className={`min-h-screen h-full flex flex-col transition-colors duration-300 ${
         isDarkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"
       }`}
     >
@@ -932,7 +945,7 @@ export default function Component() {
         className={`fixed top-0 left-0 right-0 z-10 transition-all duration-300 ${
           isDarkMode ? "bg-gray-900" : "bg-white"
         } ${
-          (isTyping && currentView === "editor") || (!showTopBar && currentView === "editor")
+          (currentView === "editor" && (isTyping || !showTopBar))
             ? "opacity-0 pointer-events-none"
             : "opacity-100"
         }`}
@@ -943,7 +956,7 @@ export default function Component() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setCurrentView("editor")}
+                onClick={createNewEntry}
                 className={`transition-colors ${
                   isDarkMode
                     ? "text-gray-400 hover:text-gray-100 hover:bg-gray-800"
@@ -1011,15 +1024,17 @@ export default function Component() {
 
       {/* Main Content Area */}
       <div className="pt-20 px-6">
-        <div className="max-w-4xl mx-auto py-8">
+        <div className="max-w-4xl mx-auto">
           <textarea
+            ref={textareaRef}
             value={content}
             onChange={handleContentChange}
             placeholder=""
             className={`w-full resize-none border-none outline-none font-mono text-lg leading-relaxed bg-transparent p-0 m-0 transition-colors ${
               isDarkMode ? "text-gray-100" : "text-gray-800"
             }`}
-            rows={Math.max(20, content.split("\n").length + 5)}
+            rows={1}
+            style={{ overflow: 'hidden', minHeight: '120px' }}
           />
         </div>
       </div>
