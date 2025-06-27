@@ -168,8 +168,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/hellowords/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/hellowords/discussions)
+- **Issues**: [GitHub Issues](https://github.com/sebastiancmanalo/hellowords/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/sebastiancmanalo/hellowords/discussions)
 - **Email**: support@hellowords.app
 
 ---
