@@ -170,6 +170,20 @@ export default function Component() {
     }
   }, [selectedEntry])
 
+  // Clear draft on page refresh (but not on app close)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Check if this is a page refresh using Performance Navigation API
+      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+      
+      if (navigation && navigation.type === 'reload') {
+        // This is a page refresh, clear the draft
+        localStorage.removeItem(DRAFT_KEY)
+        console.log('[Draft] Cleared draft on page refresh')
+      }
+    }
+  }, [])
+
   const loadEntries = async (encryptionKey: string) => {
     if (!user || !encryptionKey) return
 
