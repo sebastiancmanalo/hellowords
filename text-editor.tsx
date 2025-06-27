@@ -63,7 +63,6 @@ export default function Component() {
       if (session?.user) {
         const encryptionKey = EncryptionService.generateUserKey(session.user.id, session.user.email || "")
         setUserEncryptionKey(encryptionKey)
-        setCurrentView("editor")
       }
 
       setIsLoading(false)
@@ -77,11 +76,9 @@ export default function Component() {
         if (session?.user) {
           const encryptionKey = EncryptionService.generateUserKey(session.user.id, session.user.email || "")
           setUserEncryptionKey(encryptionKey)
-          setCurrentView("editor")
         } else {
           setEntries([])
           setUserEncryptionKey("")
-          setCurrentView("editor")
         }
       })
 
