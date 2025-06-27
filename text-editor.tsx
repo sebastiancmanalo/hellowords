@@ -170,17 +170,29 @@ export default function Component() {
     }
   }, [selectedEntry])
 
-  // Clear draft on page refresh (but not on app close)
+  // Clear draft on page refresh
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Check if this is a page refresh using Performance Navigation API
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+      // Check if this is a page refresh by looking for recent unload timestamp
+      const lastUnloadTime = sessionStorage.getItem('hellowords_last_unload')
+      const currentTime = Date.now()
       
-      if (navigation && navigation.type === 'reload') {
-        // This is a page refresh, clear the draft
-        localStorage.removeItem(DRAFT_KEY)
-        console.log('[Draft] Cleared draft on page refresh')
+      if (lastUnloadTime) {
+        const timeSinceUnload = currentTime - parseInt(lastUnloadTime)
+        // If unload was very recent (within 1 second), it's likely a refresh
+        if (timeSinceUnload < 1000) {
+          localStorage.removeItem(DRAFT_KEY)
+          console.log('[Draft] Cleared draft on page refresh (detected by timing)')
+        }
       }
+
+      // Set up beforeunload to record when we're about to unload
+      const handleBeforeUnload = () => {
+        sessionStorage.setItem('hellowords_last_unload', Date.now().toString())
+      }
+
+      window.addEventListener('beforeunload', handleBeforeUnload)
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload)
     }
   }, [])
 
