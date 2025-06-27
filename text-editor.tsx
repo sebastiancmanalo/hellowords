@@ -40,6 +40,7 @@ export default function Component() {
   const [userEncryptionKey, setUserEncryptionKey] = useState<string>("")
   const pendingEntryRef = useRef<string | null>(null)
   const PENDING_ENTRY_KEY = 'pendingEntry'
+  const DRAFT_KEY = 'hellowords_draft'
   const [pendingSave, setPendingSave] = useState(false)
   const [locationEnabled, setLocationEnabled] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -157,6 +158,17 @@ export default function Component() {
       console.log('[PendingEntry] Effect skipped. user:', user?.id, 'userEncryptionKey:', !!userEncryptionKey, 'pendingSave:', pendingSave)
     }
   }, [user, userEncryptionKey, pendingSave])
+
+  // Load draft on component mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !selectedEntry) {
+      const savedDraft = localStorage.getItem(DRAFT_KEY)
+      if (savedDraft && savedDraft.trim()) {
+        setContent(savedDraft)
+        console.log('[Draft] Loaded draft from localStorage:', savedDraft.length, 'characters')
+      }
+    }
+  }, [selectedEntry])
 
   const loadEntries = async (encryptionKey: string) => {
     if (!user || !encryptionKey) return
@@ -323,6 +335,12 @@ export default function Component() {
       setContent("")
       setSelectedEntry(null)
       setCurrentView("entries")
+      
+      // Clear draft from localStorage after successful save
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(DRAFT_KEY)
+        console.log('[Draft] Cleared draft after successful save')
+      }
     } catch (error) {
       console.error("Error saving entry:", error)
     } finally {
@@ -385,6 +403,12 @@ export default function Component() {
     setSelectedEntry(null)
     setContent("")
     setCurrentView("editor")
+    
+    // Clear draft when starting a new entry
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(DRAFT_KEY)
+      console.log('[Draft] Cleared draft when creating new entry')
+    }
   }
 
   const handleRightClick = (entryId: string, event: React.MouseEvent) => {
@@ -409,8 +433,18 @@ export default function Component() {
   }
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value)
+    const newContent = e.target.value
+    setContent(newContent)
     setIsTyping(true)
+
+    // Save draft to localStorage (debounced)
+    if (typeof window !== 'undefined' && !selectedEntry) {
+      if (newContent.trim()) {
+        localStorage.setItem(DRAFT_KEY, newContent)
+      } else {
+        localStorage.removeItem(DRAFT_KEY)
+      }
+    }
 
     if (typingTimeout) {
       clearTimeout(typingTimeout)
@@ -468,6 +502,12 @@ export default function Component() {
       setContent("")
       setSelectedEntry(null)
       setCurrentView("entries")
+      
+      // Clear draft from localStorage after successful save
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(DRAFT_KEY)
+        console.log('[Draft] Cleared draft after pending entry save')
+      }
     } catch (error) {
       console.error('[PendingEntry] Error saving entry after auth:', error)
     } finally {

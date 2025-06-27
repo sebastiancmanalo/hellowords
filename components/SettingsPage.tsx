@@ -113,6 +113,25 @@ export default function SettingsPage({
           </Button>
         </div>
       )}
+
+      <div className="mb-8">
+        <h2 className="font-semibold mb-2">Data Management</h2>
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('hellowords_draft')
+              alert('Current draft cleared successfully.')
+            }
+          }} 
+          className="w-full mb-2"
+        >
+          Clear current draft
+        </Button>
+        <p className="text-xs text-gray-500">
+          Clears any unsaved draft content from your browser.
+        </p>
+      </div>
     </div>
   )
 } 
