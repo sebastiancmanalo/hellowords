@@ -17,6 +17,7 @@ HelloWords believes that the best journaling happens when there are no barriers 
 - **OAuth Authentication**: Secure Google sign-in
 - **Responsive Design**: Works beautifully on all devices
 - **Settings Management**: User preferences and account management
+- **Smart Draft System**: Auto-saves content as you type, preserves drafts when closing app, clears on page refresh
 
 ### Privacy & Security
 - **Client-Side Encryption**: All entries encrypted before reaching our servers
@@ -24,6 +25,14 @@ HelloWords believes that the best journaling happens when there are no barriers 
 - **No Data Access**: Even if our database is compromised, your entries remain private
 - **Location Control**: Location saving is opt-in and disabled by default
 - **Anonymous Writing**: Write entries before signing in (saved after authentication)
+
+### Smart Draft System
+- **Auto-Save**: Content is automatically saved to browser storage as you type
+- **App Close Preservation**: Drafts persist when you close the browser tab/window
+- **Refresh Clearing**: Drafts are automatically cleared on page refresh
+- **Smart Detection**: Uses timing-based detection to distinguish between app closure and page refresh
+- **Manual Control**: Clear drafts anytime via settings page
+- **Privacy Preserved**: Drafts are stored locally, never sent to servers
 
 ## 🚀 Getting Started
 
